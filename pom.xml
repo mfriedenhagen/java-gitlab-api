@@ -62,6 +62,10 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<!-- IP of the docker machine, use 127.0.0.1 for Docker on Mac and Windows -->
+		<gitlabExternalIp>127.0.0.1</gitlabExternalIp>
+		<!-- gitlab needs a long time to start up, so wait up to 2 minutes -->
+		<docker-maven-plugin.timeOut>120000</docker-maven-plugin.timeOut>
 	</properties>
 
 	<dependencies>
@@ -108,18 +112,24 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.17</version>
+				<version>2.19.1</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.17</version>
+				<version>2.19.1</version>
 				<executions>
 					<execution>
 						<id>default-integration-test</id>
 						<goals>
 							<goal>integration-test</goal>
 						</goals>
+						<configuration>
+							<systemPropertyVariables>
+								<gitlabExternalIp>${gitlabExternalIp}</gitlabExternalIp>
+								<gitlab.port>${gitlab.port}</gitlab.port>
+							</systemPropertyVariables>
+						</configuration>
 					</execution>
 					<execution>
 						<id>default-verify</id>
@@ -145,4 +155,62 @@
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>docker-gitlab</id>
+			<properties>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>io.fabric8</groupId>
+						<artifactId>docker-maven-plugin</artifactId>
+						<version>0.18.1</version>
+						<executions>
+							<execution>
+								<id>default-start</id>
+								<goals>
+									<goal>start</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>default-stop</id>
+								<goals>
+									<goal>stop</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<images>
+								<image>
+									<name>gitlab/gitlab-ce:latest</name>
+									<alias>gitlab</alias>
+									<run>
+										<ports>
+											<port>gitlab.port:80</port>
+										</ports>
+										<volumes>
+											<bind>
+												<volume>
+													${user.dir}/src/test/conf/gitlab/gitlab.rb:/etc/gitlab/gitlab.rb
+												</volume>
+											</bind>
+										</volumes>
+										<wait>
+											<http>
+												<url>http://${gitlabExternalIp}:${gitlab.port}/api/v3/projects</url>
+												<method>GET</method>
+												<status>401</status>
+											</http>
+											<time>${docker-maven-plugin.timeOut}</time>
+										</wait>
+									</run>
+								</image>
+							</images>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
