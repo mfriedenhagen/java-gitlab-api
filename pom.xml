@@ -62,8 +62,6 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<!-- IP of the docker machine, use 127.0.0.1 for Docker on Mac and Windows -->
-		<gitlabExternalIp>127.0.0.1</gitlabExternalIp>
 		<!-- gitlab needs a long time to start up, so wait up to 2 minutes -->
 		<docker-maven-plugin.timeOut>120000</docker-maven-plugin.timeOut>
 	</properties>
@@ -126,7 +124,7 @@
 						</goals>
 						<configuration>
 							<systemPropertyVariables>
-								<gitlabExternalIp>${gitlabExternalIp}</gitlabExternalIp>
+								<docker.host.address>${docker.host.address}</docker.host.address>
 								<gitlab.port>${gitlab.port}</gitlab.port>
 							</systemPropertyVariables>
 						</configuration>
@@ -198,7 +196,7 @@
 										</volumes>
 										<wait>
 											<http>
-												<url>http://${gitlabExternalIp}:${gitlab.port}/api/v3/projects</url>
+												<url>http://${docker.host.address}:${gitlab.port}/api/v3/projects</url>
 												<method>GET</method>
 												<status>401</status>
 											</http>

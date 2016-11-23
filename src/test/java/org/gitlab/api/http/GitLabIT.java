@@ -20,7 +20,7 @@ public class GitLabIT {
 
     @BeforeClass
     public static void checkForPortProperty() {
-        gitlabIp = System.getProperty("gitlabExternalIp");
+        gitlabIp = System.getProperty("docker.host.address");
         gitlabPort = System.getProperty("gitlab.port");
         assumeNotNull(gitlabIp, gitlabPort);
         assumeFalse(gitlabPort.isEmpty());
