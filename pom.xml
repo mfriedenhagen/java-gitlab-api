@@ -155,9 +155,14 @@
 	</build>
 	<profiles>
 		<profile>
-			<id>docker-gitlab</id>
+			<id>docker-ide</id>
 			<properties>
+				<docker.host.address>127.0.0.1</docker.host.address>
+				<gitlab.port>8080</gitlab.port>
 			</properties>
+		</profile>
+		<profile>
+			<id>docker-gitlab</id>
 			<build>
 				<plugins>
 					<plugin>
